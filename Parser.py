@@ -27,7 +27,17 @@ class Node(object):
             sys.exit()
 
     def accept(self, visitor):
+        try:
+            visitor.startNode(self)
+        except AttributeError:
+            pass
+
         visitor.visit(self)
+
+        try:
+            visitor.endNode(self)
+        except AttributeError:
+            pass
 
     def __getitem__(self, key):
         return self._info[key]
