@@ -2,7 +2,7 @@
 DOXYGEN : No
 
 #相邻变量定义的空行数
-VARIABLE_INTERVAL : 1
+VARIABLE_INTERVAL : 2
 
 #相邻函数定义的空行数
 FUNCTION_INTERVAL : 2

@@ -3,6 +3,7 @@
 import argparse
 from Parser import *
 from CodeGeneration import *
+from StringIO import StringIO
 
 description = \
 """
@@ -60,13 +61,48 @@ parser.add_argument(
 parser.add_argument(
         "-a",
         "--append",
-        type = int,
         required = False,
-        action = "store",
+        action = "store_true",
+        default = False,
         help = "if cpp file already exist, append to cpp file tail."
         )
 
+def do_action(args):
+    Template.init(args.template)
+
+    if not os.path.exists(args.header_file):
+        print 'header file not exist!!!'
+        return None
+
+    buf = None
+    if not args.output:
+        buf = sys.stdout
+    elif not os.path.exists(args.output):
+        buf = open(args.output,'w')
+    elif args.append:
+        buf = open(args.output, 'a')
+    else:
+       print 'file already exist, please use "-a" arg to append code to file tail.'
+       return None
+
+    node = Header(args.header_file)
+    if args.line_number:
+        Template.FUNCTION_INTERVAL = Template.VARIABLE_INTERVAL = 1
+        node = node.getNodeInLine(args.line_number)
+        if not node:
+            print 'special line number have not declare was found'
+            return None
+
+    visitor= ImplementGenerationVisitor(buf)
+    node.accept(visitor)
+
+    if type(buf) == file:
+        buf.close()
+
 if __name__=='__main__':
     args = parser.parse_args()
-    print args
+    try:
+        do_action(args)
+    except IOError,msg:
+        print msg
 
