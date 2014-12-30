@@ -94,8 +94,7 @@ class ImplementGenerationVisitor(object):
         if (not node['static']) or (not node['owner']):
             return None
         doxy_comment = ''
-        if Template.DOXYGEN: doxy_comment = node['doxygen']
-        doxy_comment+='\n'
+        if Template.DOXYGEN: doxy_comment = node['doxygen'] + os.linesep
         fmt = Template.getFormatString('VARIABLE')
         var_type = ((node['typedef']+'::') if node['typedef'] else '') + node['raw_type'];
         var_name = node['owner'] + '::' +  node['name']
@@ -109,8 +108,7 @@ class ImplementGenerationVisitor(object):
         if node['defined'] or node['inline']:
             return None
         doxy_comment = ''
-        if Template.DOXYGEN: doxy_comment = node['doxygen']
-        doxy_comment+='\n'
+        if Template.DOXYGEN: doxy_comment = node['doxygen'] + os.linesep
 
         ret_type = node['return_type']
         fullname = ((node['path']+'::') if node['path'] else '')+node['name']
@@ -173,6 +171,7 @@ class ImplementGenerationVisitor(object):
     @visitor.when(Header)
     def startNode(self, node):
         self._stream.write(Template.HEADER_START)
+        self._stream.write('\n\n#include "'+node['header_file']+'"\n\n')
 
     @visitor.when(Header)
     def endNode(self, node):
@@ -183,6 +182,8 @@ class ImplementGenerationVisitor(object):
 if __name__=='__main__':
     Template.init('template/template1')
     head=Header('sample.h')
+    print 'generate head file implement: '
     head.accept(ImplementGenerationVisitor())
-#    head.functions[1].accept(ImplementGenerationVisitor())
+    print 'generate special line_number implement: '
+    head.getNodeInLine(15).accept(ImplementGenerationVisitor())
 

@@ -153,6 +153,19 @@ class Header(Node):
     def classes(self):
         return self._classes
 
+    def getNodeInLine(self, line_number):
+        for cls in self._classes:
+            for fun in cls.methods:
+                if fun['line_number'] == line_number:
+                    return fun
+            for attr in cls.attributes:
+                if attr['line_number'] == line_number:
+                    return attr
+        for fun in self._functions:
+            if fun['line_number'] == line_number:
+                return fun
+        return None
+
 
 #test for Parser
 if __name__=='__main__':
