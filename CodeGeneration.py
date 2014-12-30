@@ -6,11 +6,50 @@
 
 import os
 import sys
+import yaml
 
 sys.path.append('external')
 
 import visitor
 from Parser import *
+
+class Template(object):
+
+    # template key-value 
+    template = {}
+    # keyword 
+    keyword = [ 'TYPE', 'FULLNAME']
+
+    @staticmethod
+    def init(filename):
+        data = file(filename).read()
+        inside = False
+        raw_content = ''
+        #replace \n to \\n in " "
+        for c in data:
+            if c=='"':
+                inside = not inside
+            if inside and c=='\n':
+                raw_content += '\\n'
+            else:
+                raw_content += c
+        content = yaml.load(raw_content)
+        for k in content:
+            v = content[k]
+            if type(v) == type(''): 
+                k = k.lstrip('\n ').rstrip('\n ')
+                v = v.lstrip('\n ').rstrip('\n ')
+            Template.template[k] = v
+            #dynamic create class attribute
+            setattr(Template, k, v)
+
+    @staticmethod
+    def getFormatString(key):
+        fmt = Template.template[key]
+        for k in Template.keyword:
+            fmt = fmt.replace(k,'%s')
+        return fmt
+
 
 class ImplementGenerationVisitor(object):
 
@@ -52,28 +91,38 @@ class ImplementGenerationVisitor(object):
     @visitor.when(Variable)
     def visit(self, node):
         """ Matches nodes of type variable. """
-        comment= node['doxygen']
-        if comment: comment+='\n'
-        s = comment+((node['typedef']+'::') if node['typedef'] else '') + \
-            node['raw_type']+' '+node['owner'] + '::' +  node['name'] +';'
-        if node['static'] and node['owner']:
-            self._stream.write( s+'\n')
+        if (not node['static']) or (not node['owner']):
+            return None
+        doxy_comment = ''
+        if Template.DOXYGEN: doxy_comment = node['doxygen']
+        doxy_comment+='\n'
+        fmt = Template.getFormatString('VARIABLE')
+        var_type = ((node['typedef']+'::') if node['typedef'] else '') + node['raw_type'];
+        var_name = node['owner'] + '::' +  node['name']
+        var_def  = fmt % (var_type, var_name)
+        self._stream.write( doxy_comment + var_def + 
+                Template.VARIABLE_INTERVAL * os.linesep)
 
     @visitor.when(Function)
     def visit(self, node):
         """ Matches nodes that contain function. """ 
         if node['defined'] or node['inline']:
             return None
-        scope = ((node['path']+'::') if node['path'] else '')
-        para='('
+        doxy_comment = ''
+        if Template.DOXYGEN: doxy_comment = node['doxygen']
+        doxy_comment+='\n'
+
+        ret_type = node['return_type']
+        fullname = ((node['path']+'::') if node['path'] else '')+node['name']
+        parameters=''
         for p in node['parameters']:
-            para += p['type'] + ' ' + p['name']
+            parameters += p['type'] + ' ' + p['name']
             if node['parameters'].index(p) < (len(node['parameters'])-1):
-                para += ', '
-        para += ')'
-        comment= node['doxygen'] 
-        self._stream.write( comment+'\n'+node['return_type']+' '+scope+node['name']+para \
-                + '\n{\n\n}\n')
+                parameters += ', '
+        fmt = Template.getFormatString('FUNCTION')
+        fun_def = fmt % (ret_type, fullname, parameters)
+        self._stream.write( doxy_comment + fun_def + 
+                Template.FUNCTION_INTERVAL * os.linesep )
 
     @visitor.when(Class)
     def visit(self, node):
@@ -94,43 +143,45 @@ class ImplementGenerationVisitor(object):
     @visitor.when(Variable)
     def startNode(self, node):
         if node['static'] and node['owner']:
-            self._stream.write('start var\n')
+            self._stream.write(Template.VARIABLE_START)
 
     @visitor.when(Variable)
     def endNode(self, node):
         if node['static'] and node['owner']:
-            self._stream.write('end var\n')
+            self._stream.write(Template.VARIABLE_END)
 
     @visitor.when(Function)
     def startNode(self, node):
         if node['defined'] or node['inline']:
             return None
-        self._stream.write('start function\n')
+        self._stream.write(Template.FUNCTION_START)
 
     @visitor.when(Function)
     def endNode(self, node):
         if node['defined'] or node['inline']:
             return None
-        self._stream.write('end function\n')
+        self._stream.write(Template.FUNCTION_END)
 
     @visitor.when(Class)
     def startNode(self, node):
-        self._stream.write('start class\n')
+        self._stream.write(Template.CLASS_START)
 
     @visitor.when(Class)
     def endNode(self, node):
-        self._stream.write('end class\n')
+        self._stream.write(Template.CLASS_END)
 
     @visitor.when(Header)
     def startNode(self, node):
-        self._stream.write('start header\n')
+        self._stream.write(Template.HEADER_START)
 
     @visitor.when(Header)
     def endNode(self, node):
-        self._stream.write('end header\n')
+        self._stream.write(Template.HEADER_END)
+
 
 # for test
 if __name__=='__main__':
+    Template.init('template/template1')
     head=Header('sample.h')
     head.accept(ImplementGenerationVisitor())
 #    head.functions[1].accept(ImplementGenerationVisitor())
