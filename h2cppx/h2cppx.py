@@ -90,7 +90,7 @@ def do_action(args):
 
     if not os.path.exists(args.header_file):
         print >>sys.stderr,'header file not exist!!!'
-        return None
+        sys.exit(2)
 
     buf = StringIO()
     node = Header(args.header_file)
@@ -98,7 +98,7 @@ def do_action(args):
         node = node.getNodeInLine(args.line_number)
         if not node:
             print >>sys.stderr,'special line number have not declare was found'
-            return None
+            sys.exit(3)
 
     # generate implement code
     visitor= ImplementGenerationVisitor(buf)
@@ -115,13 +115,14 @@ def do_action(args):
         out = open(args.output, 'w')
     else:
        print >>sys.stderr,'file already exist, please use "-a" arg to append code to file tail.'
-       return None
+       sys.exit(4)
 
     #output
     if buf.len:
         out.write(buf.getvalue().lstrip(os.linesep).rstrip(os.linesep))
     else:
         print >>sys.stderr, 'Nothing generation'
+        sys.exit(1)
 
     buf.close()
     if type(out) == file:
@@ -133,4 +134,5 @@ if __name__=='__main__':
         do_action(args)
     except IOError,msg:
         print >>sys.stderr,msg
+        sys.exit(5)
 
