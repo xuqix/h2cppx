@@ -12,7 +12,7 @@ description = \
 
 usage= \
 """
-    h2cpp [-t templatefile] [-o outputfile] [-ln line_number] [-a] header_file
+    h2cpp [-t templatefile] [-o outputfile] [-ln line_number] [-a] [-f] header_file
 """
 
 example = \
