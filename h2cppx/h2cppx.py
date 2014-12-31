@@ -58,7 +58,9 @@ parser.add_argument(
         action = "store",
         help = "special line number what generate cpp code"
         )
-parser.add_argument(
+#mutually exclusive optional
+group = parser.add_mutually_exclusive_group()
+group.add_argument(
         "-a",
         "--append",
         required = False,
@@ -66,37 +68,55 @@ parser.add_argument(
         default = False,
         help = "if cpp file already exist, append to cpp file tail."
         )
+group.add_argument(
+        "-f",
+        "--force",
+        required = False,
+        action = "store_true",
+        default = False,
+        help = "if cpp file already exist,will force overwrite cpp file!!!"
+        )
 
 def do_action(args):
     Template.init(args.template)
 
     if not os.path.exists(args.header_file):
-        print 'header file not exist!!!'
+        print >>sys.stderr,'header file not exist!!!'
         return None
 
-    buf = None
-    if not args.output:
-        buf = sys.stdout
-    elif not os.path.exists(args.output):
-        buf = open(args.output,'w')
-    elif args.append:
-        buf = open(args.output, 'a')
-    else:
-       print 'file already exist, please use "-a" arg to append code to file tail.'
-       return None
-
+    buf = StringIO()
     node = Header(args.header_file)
     if args.line_number:
-        Template.FUNCTION_INTERVAL = Template.VARIABLE_INTERVAL = 1
         node = node.getNodeInLine(args.line_number)
         if not node:
-            print 'special line number have not declare was found'
+            print >>sys.stderr,'special line number have not declare was found'
             return None
 
+    # generate implement code
     visitor= ImplementGenerationVisitor(buf)
     node.accept(visitor)
 
-    if type(buf) == file:
+    out = None
+    if not args.output:
+        out = sys.stdout
+    elif not os.path.exists(args.output):
+        out = open(args.output,'w')
+    elif args.append:
+        out = open(args.output, 'a')
+    elif args.force:
+        out = open(args.output, 'w')
+    else:
+       print >>sys.stderr,'file already exist, please use "-a" arg to append code to file tail.'
+       return None
+
+    #output
+    if buf.len:
+        out.write(buf.getvalue().lstrip(os.linesep).rstrip(os.linesep))
+    else:
+        print >>sys.stderr, 'Nothing generation'
+
+    buf.close()
+    if type(out) == file:
         buf.close()
 
 if __name__=='__main__':
@@ -104,5 +124,5 @@ if __name__=='__main__':
     try:
         do_action(args)
     except IOError,msg:
-        print msg
+        print >>sys.stderr,msg
 

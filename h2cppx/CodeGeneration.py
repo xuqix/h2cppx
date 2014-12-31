@@ -182,8 +182,8 @@ class ImplementGenerationVisitor(object):
 if __name__=='__main__':
     Template.init('template/template1')
     head=Header('sample.h')
-    print 'generate head file implement: '
+    print 'Generate all head file implement: '
     head.accept(ImplementGenerationVisitor())
-    print 'generate special line_number implement: '
+    print 'Generate special line_number %d implement: \n' % 15
     head.getNodeInLine(15).accept(ImplementGenerationVisitor())
 
