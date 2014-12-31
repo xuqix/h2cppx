@@ -1,5 +1,13 @@
 #!/usr/bin/env python
 
+import os
+import sys
+
+cur_dir = os.path.split(os.path.realpath(__file__))[0]
+sys.path.append(cur_dir)
+sys.path.append(cur_dir+'/external')
+sys.path.append(cur_dir+'/template')
+
 import argparse
 from Parser import *
 from CodeGeneration import *
@@ -38,7 +46,7 @@ parser.add_argument(
         type = str,
         required = False,
         action  = "store",
-        default = "template/template1",
+        default = cur_dir+"/template/template1",
         help = "spcial template config file"
         )
 #parser.add_argument( "-hfile", "--hfile", type = str, required = True, action = "store", help = "special c++ header file")
