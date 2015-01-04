@@ -5,14 +5,26 @@
 #define OS_NAME "Linux"
 
 using namespace std;
+
+int friend_meth();
+
+extern int ext_meth();
+
 class SampleClass
 {
 public:
     SampleClass();
+
+    explict SampleClass(int t);
+
+    ~SampleClass();
+
+    bool operator<(SampleClass &rhs);
+
     /*!
      * Method 1
      */
-    string meth1();
+    std::string meth1();
 
     ///
     /// Method 2 description
@@ -34,15 +46,33 @@ public:
      *
      * @return Return value
      *********************************/
-    unsigned int meth4();
+    virtual unsigned int vmeth1();
+
+    virtual unsigned int vmeth2() = 0;
+
+    const unsigned int vmeth3() const;
+
+    friend int friend_meth();
+
 private:
     void * meth5(){return NULL};
 
+    inline float meth6() { return 0.0f; }
+
+    string prop2;
+
+    static const int prop3;
+    const static int prop4;
+
     /// prop1 description
-    static string prop1;
+    static std::string prop1;
     //! prop5 description
     static int prop5;
 };
+
+inline SampleClass::meth2(int v1) {
+}
+
 namespace Alpha
 {
     class AlphaClass
@@ -73,4 +103,4 @@ int sampleFreeFunction(int i)
 }
 
 int anotherFreeFunction(void);
-}
+
