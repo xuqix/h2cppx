@@ -180,7 +180,8 @@ class ImplementGenerationVisitor(object):
     @visitor.when(Header)
     def startNode(self, node):
         self._stream.write(Template.HEADER_START)
-        self._stream.write('\n\n#include "'+node['header_file']+'"\n\n')
+        self._stream.write('\n\n#include "' + \
+                os.path.basename(node['header_file']) + '"\n\n')
 
     @visitor.when(Header)
     def endNode(self, node):
