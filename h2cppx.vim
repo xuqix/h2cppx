@@ -8,7 +8,12 @@ endif
 
 let g:h2cppx = 1
 
-let s:python_path = g:python_path
+if(exists('g:python_path'))
+    let s:python_path = g:python_path
+else
+    let s:python_path = 'python'
+endif
+
 if(system(s:python_path . ' -c "import sys; print sys.version_info[0]"') != "2\n")
     echohl WarningMsg | echomsg "load h2cppx faild,python2.x is must need for h2cppx." | echohl None
     finish
