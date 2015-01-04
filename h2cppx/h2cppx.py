@@ -123,10 +123,11 @@ def do_action(args):
     else:
         print >>sys.stderr, 'Nothing generation'
         sys.exit(1)
+    out.write(os.linesep)
 
     buf.close()
     if type(out) == file:
-        buf.close()
+        out.close()
 
 if __name__=='__main__':
     args = parser.parse_args()
