@@ -97,6 +97,7 @@ class ImplementGenerationVisitor(object):
         if Template.DOXYGEN: doxy_comment = node['doxygen'] + os.linesep
         fmt = Template.getFormatString('VARIABLE')
         var_type = ((node['typedef']+'::') if node['typedef'] else '') + node['raw_type'];
+        if node['constant']: var_type = 'const ' + var_type
         var_name = node['owner'] + '::' +  node['name']
         var_def  = fmt % (var_type, var_name)
         self._stream.write( doxy_comment + var_def + 
@@ -105,20 +106,28 @@ class ImplementGenerationVisitor(object):
     @visitor.when(Function)
     def visit(self, node):
         """ Matches nodes that contain function. """ 
-        if node['defined'] or node['inline']:
+        if node['defined'] or node['inline'] or node['extern'] or \
+           node['pure_virtual'] or node['friend']:
             return None
         doxy_comment = ''
         if Template.DOXYGEN: doxy_comment = node['doxygen'] + os.linesep
 
         ret_type = node['return_type']
-        fullname = ((node['path']+'::') if node['path'] else '')+node['name']
+        fullname = ((node['path']+'::') if node['path'] else '') + \
+                   ('~' if node['destructor'] else '') + node['name']
         parameters=''
         for p in node['parameters']:
             parameters += p['type'] + ' ' + p['name']
             if node['parameters'].index(p) < (len(node['parameters'])-1):
                 parameters += ', '
         fmt = Template.getFormatString('FUNCTION')
-        fun_def = fmt % (ret_type, fullname, parameters)
+        fun_def = ''
+        if node['constructor'] or node['destructor']:
+            fun_def = fmt[3:] % (fullname, parameters)
+        else:
+            fun_def = fmt % (ret_type, fullname, parameters)
+        if node['const']:
+            fun_def = fun_def.replace(')', ') const')
         self._stream.write( doxy_comment + fun_def + 
                 Template.FUNCTION_INTERVAL * os.linesep )
 

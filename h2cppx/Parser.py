@@ -59,6 +59,7 @@ class Variable(Node):
             'static'   : True if info['static'] else False,
             'doxygen'  : info['doxygen'] if 'doxygen' in info else '',
             'line_number' : info['line_number'],
+            'constant' : True if info['constant'] else False,
             'default_value' : info['default_value'] if 'default_value' in info else '',
         }
         self._info['path'] = self._info['namespace'] + self._info['owner']
