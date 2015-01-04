@@ -22,12 +22,13 @@ endif
 let s:installed_directory = expand('<sfile>:p:h')
 let s:h2cppx_dir = s:installed_directory . "/h2cppx"
 let s:h2cppx_path= s:h2cppx_dir . "/h2cppx.py"
+let s:config_file= s:installed_directory . "/config"
 
 "full generate cpp file
 function s:h2cppx(header_file, isClipboard)
     let cpp_file = expand('%:p:r') . "\.cpp"
 
-    let cmd = printf('%s "%s" "%s" ', s:python_path, s:h2cppx_path, a:header_file)
+    let cmd = printf('%s "%s" -t "%s" "%s" ', s:python_path, s:h2cppx_path, s:config_file, a:header_file)
     if ! (a:isClipboard == 1)
         let cmd = cmd . " -o " . cpp_file
     endif
@@ -51,7 +52,7 @@ function s:h2cppx(header_file, isClipboard)
         elseif v:shell_error == 4
             let ans = input("file already exisit, force overwrite it?(yes/no): ")
             if toupper(ans) == "YES" || toupper(ans) == "Y"
-                let cmd = printf('%s "%s" "%s" -o "%s" -f', s:python_path, s:h2cppx_path, a:header_file, cpp_file)
+                let cmd = printf('%s "%s" "%s" -t "%s" -o "%s" -f', s:python_path, s:h2cppx_path, a:header_file, s:config_file, cpp_file)
                 let content = system(cmd)
                 continue
             endif
@@ -66,7 +67,7 @@ function s:h2cppx_line(header_file, line_number, isClipboard)
     let ln = a:line_number
     let cpp_file = expand('%:p:r') . "\.cpp"
 
-    let cmd = printf('%s "%s" "%s" -ln %d -a', s:python_path, s:h2cppx_path, a:header_file, ln)
+    let cmd = printf('%s "%s" "%s" -t "%s" -ln %d -a', s:python_path, s:h2cppx_path, a:header_file, s:config_file, ln)
     if ! (a:isClipboard == 1)
         let cmd = cmd . " -o " . cpp_file
     endif
