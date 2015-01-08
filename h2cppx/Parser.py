@@ -42,6 +42,11 @@ class Node(object):
     def __getitem__(self, key):
         return self._info[key]
 
+    def __getattr__(self, name):
+        if name in self._info:
+            return self._info[name]
+        return object.__getattr__(name)
+
 
 class Variable(Node):
     ''' cpp variable object '''
