@@ -10,27 +10,28 @@ FUNCTION_INTERVAL : 2
 #变量定义生成格式
 #//class $variable.owner variable
 #$variable.sign_type $variable.sign_name; 
-VARIABLE : "
-//variable $variable.owner in $variable.owner
-$variable.sign_type $variable.sign_name;
-" 
+VARIABLE : "$variable.sign_type $variable.sign_name;" 
 
 #函数定义生成格式
 FUNCTION : "
 
-#if $function.access: 
-/* $function.access method in $function.path */
-#else
-/* free function */
-#end if
-${function.return_type} ${function.sign_name}(#slurp
+#set $space=' '
+#set $l=$len($function.return_type)+$len($function.sign_name)+2
+#if $function.access: /* $function.access */
+${function.return_type} ${function.sign_name}(
 #for $p in $function.parameters:
+#repeat $l
+$space#slurp
+#end repeat
 #if $function.parameters.index($p)!=$len($function.parameters)-1
- $p.type $p.name,#slurp
+$p.type $p.name,
 #else
- $p.type $p.name#slurp
+$p.type $p.name
 #end if
 #end for 
+#repeat $l
+$space#slurp
+#end repeat
 ) 
 {
 

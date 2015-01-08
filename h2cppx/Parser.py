@@ -68,7 +68,10 @@ class Variable(Node):
             'default_value' : info['default_value'] if 'default_value' in info else '',
         }
         self._info['path'] = self._info['namespace'] + self._info['owner']
-                
+        self._info['sign_name'] = self._info['path'] + '::' +  self._info['name']
+        self._info['sign_type'] = ((self._info['typedef']+'::') if self._info['typedef'] else '') + self._info['raw_type'];
+        if self._info['constant']: 
+            self._info['sign_type'] = 'const ' + self._info['sign_type']
 
 class Function(Node):
     ''' 
@@ -106,6 +109,9 @@ class Function(Node):
             'pure_virtual': 'pure virtual' if info['pure_virtual'] else '',
             'doxygen'  : info['doxygen'] if 'doxygen' in info else '',
         }
+        self._info['sign_name'] = \
+        ((self._info['path']+'::') if self._info['path'] else '') + \
+        ('~' if self._info['destructor'] else '') + self._info['name']
 
 
 class Class(Node):

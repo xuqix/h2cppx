@@ -13,9 +13,10 @@ extern int ext_meth();
 class SampleClass
 {
 public:
+    typedef int MyTypedef;
     SampleClass();
 
-    explict SampleClass(int t);
+    explict SampleClass(int a,int b, int c);
 
     ~SampleClass();
 
@@ -68,6 +69,8 @@ private:
     static std::string prop1;
     //! prop5 description
     static int prop5;
+
+    static MyTypedef prop6;
 };
 
 inline SampleClass::meth2(int v1) {
@@ -80,9 +83,12 @@ namespace Alpha
     public:
         AlphaClass();
 
+    private:
         void alphaMethod();
 
         string alphaString;
+
+        static string s_alphaString;
     };
 
     namespace Omega
