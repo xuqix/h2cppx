@@ -12,8 +12,9 @@ sys.path.append('external')
 
 import visitor
 from Parser import *
+from Cheetah.Template import Template
 
-class Template(object):
+class Config(object):
 
     # template key-value 
     template = {}
@@ -39,14 +40,14 @@ class Template(object):
             if type(v) == type(''): 
                 k = k.lstrip('\n ').rstrip('\n ')
                 v = v.lstrip('\n ').rstrip('\n ')
-            Template.template[k] = v
+            Config.template[k] = v
             #dynamic create class attribute
-            setattr(Template, k, v)
+            setattr(Config, k, v)
 
     @staticmethod
     def getFormatString(key):
-        fmt = Template.template[key]
-        for k in Template.keyword:
+        fmt = Config.template[key]
+        for k in Config.keyword:
             fmt = fmt.replace(k,'%s')
         return fmt
 
@@ -94,14 +95,11 @@ class ImplementGenerationVisitor(object):
         if (not node['static']) or (not node['owner']):
             return None
         doxy_comment = ''
-        if Template.DOXYGEN: doxy_comment = node['doxygen'] + os.linesep
-        fmt = Template.getFormatString('VARIABLE')
-        var_type = ((node['typedef']+'::') if node['typedef'] else '') + node['raw_type'];
-        if node['constant']: var_type = 'const ' + var_type
-        var_name = node['owner'] + '::' +  node['name']
-        var_def  = fmt % (var_type, var_name)
-        self._stream.write( doxy_comment + var_def + 
-                Template.VARIABLE_INTERVAL * os.linesep)
+        if Config.DOXYGEN: doxy_comment = node['doxygen'] + os.linesep
+        var_def = str(Template(Config.VARIABLE, searchList=[{
+            'variable': node,
+            }]))
+        self._stream.write( doxy_comment + var_def)
 
     @visitor.when(Function)
     def visit(self, node):
@@ -110,26 +108,14 @@ class ImplementGenerationVisitor(object):
            node['pure_virtual'] or node['friend']:
             return None
         doxy_comment = ''
-        if Template.DOXYGEN: doxy_comment = node['doxygen'] + os.linesep
+        if Config.DOXYGEN: doxy_comment = node['doxygen'] + os.linesep
 
-        ret_type = node['return_type']
-        fullname = ((node['path']+'::') if node['path'] else '') + \
-                   ('~' if node['destructor'] else '') + node['name']
-        parameters=''
-        for p in node['parameters']:
-            parameters += p['type'] + ' ' + p['name']
-            if node['parameters'].index(p) < (len(node['parameters'])-1):
-                parameters += ', '
-        fmt = Template.getFormatString('FUNCTION')
-        fun_def = ''
-        if node['constructor'] or node['destructor']:
-            fun_def = fmt[3:] % (fullname, parameters)
-        else:
-            fun_def = fmt % (ret_type, fullname, parameters)
+        fun_def = str(Template(Config.FUNCTION, searchList=[{
+            'function': node
+            }]))
         if node['const']:
             fun_def = fun_def.replace(')', ') const')
-        self._stream.write( doxy_comment + fun_def + 
-                Template.FUNCTION_INTERVAL * os.linesep )
+        self._stream.write( doxy_comment + fun_def) 
 
     @visitor.when(Class)
     def visit(self, node):
@@ -150,47 +136,91 @@ class ImplementGenerationVisitor(object):
     @visitor.when(Variable)
     def startNode(self, node):
         if node['static'] and node['owner']:
-            self._stream.write(Template.VARIABLE_START)
+            var_start = ''
+            if Config.VARIABLE_START: 
+                var_start = str(Template(Config.VARIABLE_START, searchList=[{
+                    'variable': node
+                    }]))
+                self._stream.write(var_start+os.linesep)
 
     @visitor.when(Variable)
     def endNode(self, node):
         if node['static'] and node['owner']:
-            self._stream.write(Template.VARIABLE_END)
+            var_end = ''
+            if Config.VARIABLE_END: 
+                var_end = str(Template(Config.VARIABLE_END, searchList=[{
+                    'variable': node
+                    }]))
+                self._stream.write(os.linesep+var_end)
+            self._stream.write(Config.VARIABLE_INTERVAL * os.linesep)
 
     @visitor.when(Function)
     def startNode(self, node):
-        if node['defined'] or node['inline']:
+        if node['defined'] or node['inline'] or node['extern'] or \
+           node['pure_virtual'] or node['friend']:
             return None
-        self._stream.write(Template.FUNCTION_START)
+        func_start = ''
+        if Config.FUNCTION_START: 
+            func_start = str(Template(Config.FUNCTION_START, searchList=[{
+                'function': node
+                }]))
+            self._stream.write(func_start+os.linesep)
 
     @visitor.when(Function)
     def endNode(self, node):
-        if node['defined'] or node['inline']:
+        if node['defined'] or node['inline'] or node['extern'] or \
+           node['pure_virtual'] or node['friend']:
             return None
-        self._stream.write(Template.FUNCTION_END)
+        func_end = ''
+        if Config.FUNCTION_END: 
+            func_end = str(Template(Config.FUNCTION_END, searchList=[{
+                'function': node
+                }]))
+            self._stream.write(os.linesep + func_end)
+        self._stream.write( Config.FUNCTION_INTERVAL * os.linesep)
 
     @visitor.when(Class)
     def startNode(self, node):
-        self._stream.write(Template.CLASS_START)
+        class_start = ''
+        if Config.CLASS_START: 
+            class_start = str(Template(Config.CLASS_START, searchList=[{
+                'class': node
+                }]))
+            self._stream.write(class_start+2*os.linesep)
 
     @visitor.when(Class)
     def endNode(self, node):
-        self._stream.write(Template.CLASS_END)
+        class_end = ''
+        if Config.CLASS_END:
+            class_end = str(Template(Config.CLASS_END, searchList=[{
+                'class': node
+                }]))
+            self._stream.write(class_end+2*os.linesep)
 
     @visitor.when(Header)
     def startNode(self, node):
-        self._stream.write(Template.HEADER_START)
-        self._stream.write('\n\n#include "' + \
+        head_start = ''
+        if Config.HEADER_START:
+            head_start = str(Template(Config.HEADER_START, searchList=[{
+                'header': node
+                }]))
+            self._stream.write(head_start)
+            self._stream.write('\n\n#include "' + \
                 os.path.basename(node['header_file']) + '"\n\n')
 
     @visitor.when(Header)
     def endNode(self, node):
-        self._stream.write(Template.HEADER_END)
+        head_end = ''
+        if Config.HEADER_END:
+            head_end = str(Template(Config.HEADER_END, searchList=[{
+                'header': node
+                }]))
+            self._stream.write(head_end+os.linesep)
 
 
 # for test
 if __name__=='__main__':
-    Template.init('template/template1')
+    Config.init('template/template1')
     head=Header('sample.h')
     print 'Generate all head file implement: '
     head.accept(ImplementGenerationVisitor())

@@ -8,12 +8,20 @@ VARIABLE_INTERVAL : 2
 FUNCTION_INTERVAL : 2
 
 #变量定义生成格式
-VARIABLE : " TYPE\tFULLNAME; "
+VARIABLE : "$variable.sign_type $variable.sign_name;" 
 
 #函数定义生成格式
 FUNCTION : "
 
-TYPE FULLNAME(TYPE) 
+${function.return_type} ${function.sign_name}(#slurp
+#for $p in $function.parameters:
+#if $function.parameters.index($p)!=$len($function.parameters)-1
+$p.type $p.name, #slurp
+#else
+$p.type $p.name#slurp
+#end if
+#end for 
+) 
 {
 
 } 

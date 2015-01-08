@@ -130,7 +130,7 @@ def auto_handle(args):
 
 
 def do_action(args):
-    Template.init(args.template)
+    Config.init(args.template)
 
     if not os.path.exists(args.header_file):
         print >>sys.stderr,'The header file not exist!!!'

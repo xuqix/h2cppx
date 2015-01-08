@@ -65,10 +65,13 @@ class Variable(Node):
             'doxygen'  : info['doxygen'] if 'doxygen' in info else '',
             'line_number' : info['line_number'],
             'constant' : True if info['constant'] else False,
-            'default_value' : info['default_value'] if 'default_value' in info else '',
+            'default_value' : info['defaultValue'] if 'defaultValue' in info else None,
         }
         self._info['path'] = self._info['namespace'] + self._info['owner']
-                
+        self._info['sign_name'] = self._info['path'] + '::' +  self._info['name']
+        self._info['sign_type'] = ((self._info['typedef']+'::') if self._info['typedef'] else '') + self._info['raw_type'];
+        if self._info['constant']: 
+            self._info['sign_type'] = 'const ' + self._info['sign_type']
 
 class Function(Node):
     ''' 
@@ -107,12 +110,17 @@ class Function(Node):
             'doxygen'  : info['doxygen'] if 'doxygen' in info else '',
             'class' : info['class']
         }
+
         #fix :
         # When CppHeaderParser met the 'operator' function defined 
         # outside the class, the 'class' attribute will be empty
         if not self._info['path'] and 'operator' in self._info['name']:
             if not self._info['class']:
                 self._info['class'] = self._info['return_type'].split(' ')[1].rstrip(':')
+
+        self._info['sign_name'] = \
+        ((self._info['path']+'::') if self._info['path'] else '') + \
+        ('~' if self._info['destructor'] else '') + self._info['name']
 
 
 class Class(Node):
