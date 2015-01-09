@@ -40,7 +40,7 @@ class Node(object):
             pass
 
     def __getitem__(self, key):
-        return self._info[key]
+        return (self._info[key] if key in self._info else None)
 
 
 class Variable(Node):
@@ -100,7 +100,14 @@ class Function(Node):
             'constructor': True if info['constructor'] else False,
             'pure_virtual': 'pure virtual' if info['pure_virtual'] else '',
             'doxygen'  : info['doxygen'] if 'doxygen' in info else '',
+            'class' : info['class']
         }
+        #fix :
+        # When CppHeaderParser met the 'operator' function defined 
+        # outside the class, the 'class' attribute will be empty
+        if not self._info['path'] and 'operator' in self._info['name']:
+            if not self._info['class']:
+                self._info['class'] = self._info['return_type'].split(' ')[1].rstrip(':')
 
 
 class Class(Node):
@@ -166,6 +173,37 @@ class Header(Node):
             if fun['line_number'] == line_number:
                 return fun
         return None
+
+def different_node(header, cppfile):
+    def existInCpp(cpp, node):
+        for func in cpp.functions:
+            funcname = ((func['class']+'::') if func['class'] else '') + ('~' if func['destructor'] else '') + func['name']
+            nodename = ((node['path']+'::') if node['path'] else '') + ('~' if node['destructor'] else '') + node['name']
+            if funcname == nodename:
+                match = True
+                # prototype is same ?
+                if len(func['parameters']) != len(node['parameters']):
+                    match = False
+                else:
+                    for i in range(0,len(node['parameters'])):
+                        if func['parameters'][i]['type'] != node['parameters'][i]['type']:
+                            match = False
+                if match: return None
+        return node
+
+    diff_node = []
+    for cls in header.classes:
+        for fun in cls.methods:
+            if fun['defined'] or fun['inline'] or fun['extern'] or fun['pure_virtual'] or fun['friend']: 
+                continue
+            node = existInCpp(cppfile, fun)
+            if node: diff_node.append(node)
+    for fun in header.functions:
+        if fun['defined'] or fun['inline'] or fun['extern'] or fun['pure_virtual'] or fun['friend']: 
+            continue
+        node = existInCpp(cppfile, fun)
+        if node: diff_node.append(node)
+    return diff_node
 
 
 #test for Parser

@@ -15,7 +15,13 @@ class SampleClass
 public:
     SampleClass();
 
+    SampleClass(double a);
+
     explict SampleClass(int t);
+
+    explict SampleClass(float t);
+
+    SampleClass(int a, int b, int c);
 
     ~SampleClass();
 
@@ -93,6 +99,8 @@ namespace Alpha
             OmegaClass();
 
             string omegaString;
+
+            int f2(int f);
         };
     };
 }
