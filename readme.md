@@ -17,11 +17,19 @@ Installation
 Before start, make sure you have installed the python package "yaml",
 Then run below command:
 
+    cd ~/.vim/plugin
     git clone 'https://github.com/xuqix/h2cppx.git
     cd  h2cppx
     git checkout vim-port
 
-Now just placed the plugin to the directory "~/.vim/plugin/" and you can start use it.
+or you can use bundle to install it:
+
+add `Bundle 'xuqix/h2cppx'` to ~/.vimrc and install it,then:
+
+    cd ~/.vim/bundle/h2cppx
+    git checkout vim-port
+
+Now you can start using it.
 
 After the installation is complete, 
 You can map the key in .vimrc to quickly use the command.
