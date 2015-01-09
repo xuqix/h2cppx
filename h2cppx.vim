@@ -102,6 +102,31 @@ function s:h2cppx_line(header_file, line_number, isClipboard)
     endwhile
 endfunction
 
+function s:h2cppx_auto(header_file)
+    let cpp_file = expand('%:p:r') . "\.cpp"
+
+    let cmd = printf('%s "%s" -t "%s" "%s" -auto', s:python_path, s:h2cppx_path, s:config_file, a:header_file)
+    let content = system(cmd)
+
+    while 1
+        if v:shell_error == 0
+            let filename = expand('%:r') . "\.cpp"
+            echo "Append code to " . filename . " successful!"
+        elseif v:shell_error == 1
+            echo content
+        elseif v:shell_error == 2
+            echo content 
+        elseif v:shell_error == 3
+            echo content 
+        elseif v:shell_error == 4
+            echohl WarningMsg | echo "unknow error" | echohl None
+        elseif v:shell_error == 5
+            echohl WarningMsg | echo "IO error\n" . content | echohl None
+        endif
+        break
+    endwhile
+endfunction
+
 function H2cppxLine(isClipboard)
     call s:h2cppx_line(expand('%:p'), line('.'), a:isClipboard)
 endfunction
@@ -110,10 +135,16 @@ function H2cppx(isClipboard)
     call s:h2cppx(expand('%:p'), a:isClipboard)
 endfunction
 
+function H2cppxAuto()
+    call s:h2cppx_auto(expand('%:p'))
+endfunction
+
 "generate cpp define and put in cpp file
 command! -buffer -nargs=0 H2cppx call H2cppx(0)
 command! -buffer -nargs=0 H2cppxLine call H2cppxLine(0)
 "generate cpp define and put in clipboard
 command! -buffer -nargs=0 CpH2cppx call H2cppx(1)
 command! -buffer -nargs=0 CpH2cppxLine call H2cppxLine(1)
+"auto generate cpp define 
+command! -buffer -nargs=0 H2cppxAuto call H2cppxAuto()
 
