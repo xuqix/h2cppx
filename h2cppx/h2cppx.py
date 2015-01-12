@@ -13,6 +13,11 @@ from Parser import *
 from CodeGeneration import *
 from StringIO import StringIO
 
+version_description = \
+"""
+%(prog)s 1.0
+"""
+
 description = \
 """
     Parse C++ header file and generate c++ implement code. 
@@ -20,7 +25,7 @@ description = \
 
 usage= \
 """
-    h2cppx [-t templatefile] [-o outputfile] [-ln line_number] [-a] [-f] [-auto] header_file
+    h2cppx header_file [-t templatefile] [-o outputfile] [-ln line_number] [-a] [-f] [[-auto] [-p] [--search-path] [--output-path]] [-v] 
     h2cppx -h to see the help.
 """
 
@@ -28,17 +33,18 @@ example = \
 """
 example:
     h2cppx sample.h
-    h2cppx sample.h -f -o sample.cpp
-    h2cppx sample.h -t template/template1
     h2cppx sample.h -a -o sample.cpp -ln 10
-    h2cppx sample.h -auto
+    h2cppx sample.h -f -o sample.cpp -t template/template2
+    h2cppx sample.h -auto 
+    h2cppx sample.h -auto -p cxx --search-path=src --output-path=src2
 """
 
 parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         usage = usage,
         description=description,
-        epilog = example
+        epilog = example,
+        prog = 'h2cppx'
         )
 
 parser.add_argument("header_file", help = "Specific the c++ header file")
@@ -95,24 +101,55 @@ group.add_argument(
         default = False,
         help = "Auto Contrast header and implementation files, find function declarations in the header file and append the newly added to the implementation file, if the file does not exist to achieve a new file is created!"
         )
+parser.add_argument(
+        "-p",
+        "--postfix",
+        required = False,
+        action = "store",
+        default = "cpp",
+        help = "Set to generate the implementation file extension(.c,.cc,.cxx,.cpp,...),the default value is .cpp(for -auto only)"
+        )
+parser.add_argument(
+        "--search-path",
+        required = False,
+        action = "store",
+        default = ".",
+        help = "Setting implement search directory files, the default is the current directory(for -auto only)"
+        )
+parser.add_argument(
+        "--output-path",
+        required = False,
+        action = "store",
+        help = "Setting the implement file output directory,if the file search fails, it will generate a file in this directory.the default is same as the '--search-path' specified(for -auto only)"
+        )
+parser.add_argument(
+        "-v",
+        "--version",
+        action = "version",
+        version= version_description
+        )
 
 def auto_handle(args):
+
     buf = StringIO()
     header = Header(args.header_file)
-    cppfilename = args.header_file[:args.header_file.rfind('.')] + '.cpp'
+    cppfilename = args.header_file[:args.header_file.rfind('.')] + '.' + args.postfix.lstrip('.')
 
     out = None
-    if os.path.exists(cppfilename):
-        out = open(cppfilename, 'a')
-        cppfile = Header(cppfilename)
+    path = os.path.abspath(args.search_path) + os.sep + cppfilename
+    if os.path.exists(path):
+        out = open(path, 'a')
+        cppfile = Header(path)
         diff_node = different_node(header, cppfile)
         # generate implement code
         visitor= ImplementGenerationVisitor(buf)
         for node in diff_node:
             node.accept(visitor)
     else:
+        if args.output_path:
+            path = os.path.abspath(args.output_path) + os.sep + cppfilename
         # generate implement code
-        out = open(cppfilename, 'w')
+        out = open(path, 'w')
         visitor= ImplementGenerationVisitor(buf)
         header.accept(visitor)
 
