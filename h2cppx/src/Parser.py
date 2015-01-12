@@ -23,7 +23,7 @@ class Node(object):
                 else:
                     raise TypeError('args must is subclass from Node')
         except TypeError, msg:
-            print 'Exception: ',msg
+            print >>sys.stderr,'Exception: ',msg
             sys.exit()
 
     def accept(self, visitor):
@@ -60,7 +60,7 @@ class Variable(Node):
             'typedef'  : info['typedef'],
             'name'     : info['name'],
             'namespace': info['namespace'],
-            'owner'    : info['property_of_class'],
+            'owner'    : info['property_of_class'] if 'property_of_class' in info else '',
             'static'   : True if info['static'] else False,
             'doxygen'  : info['doxygen'] if 'doxygen' in info else '',
             'line_number' : info['line_number'],
@@ -92,7 +92,8 @@ class Function(Node):
             'returns': info['returns'],
             'return_type': info['rtnType'],
             'namespace' : info['namespace'],
-            'parameters' : info['parameters'], 
+            #'parameters' : info['parameters'], 
+            'parameters' : [ Variable(p, access) for p in info['parameters'] ],
             'line_number' : info['line_number'],
             'const': True if info['const'] else False,
             'inline': True if info['inline'] else False,
@@ -162,6 +163,7 @@ class Header(Node):
         self._info = {
             'header_file' : header_file,
             'includes' : header.includes,
+            'filename' : os.path.basename(header_file),
         }
         self._functions = [ Function(function) for function in header.functions ]
         self._classes = [ Class(cls) for name,cls in header.classes.items() ]
@@ -222,7 +224,7 @@ def different_node(header, cppfile):
 #test for Parser
 if __name__=='__main__':
 
-    h=Header('sample.h')
+    h=Header('../sample/sample.h')
     for f in h.functions:
         print f['path'], f['return_type'], f['name'], f['parameters'][0]['name'] if len(f['parameters'])>0 else None
 

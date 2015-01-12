@@ -19,7 +19,7 @@ class Config(object):
     # template key-value 
     template = {}
     # keyword 
-    keyword = [ 'TYPE', 'FULLNAME']
+    #keyword = [ 'TYPE', 'FULLNAME']
 
     @staticmethod
     def init(filename):
@@ -43,13 +43,6 @@ class Config(object):
             Config.template[k] = v
             #dynamic create class attribute
             setattr(Config, k, v)
-
-    @staticmethod
-    def getFormatString(key):
-        fmt = Config.template[key]
-        for k in Config.keyword:
-            fmt = fmt.replace(k,'%s')
-        return fmt
 
 
 class ImplementGenerationVisitor(object):
@@ -205,8 +198,9 @@ class ImplementGenerationVisitor(object):
                 'header': node
                 }]))
             self._stream.write(head_start)
-            self._stream.write('\n\n#include "' + \
-                os.path.basename(node['header_file']) + '"\n\n')
+            #self._stream.write('\n\n#include "' + \
+            #    os.path.basename(node['header_file']) + '"\n\n')
+        self._stream.write(2*os.linesep)
 
     @visitor.when(Header)
     def endNode(self, node):
@@ -220,8 +214,8 @@ class ImplementGenerationVisitor(object):
 
 # for test
 if __name__=='__main__':
-    Config.init('template/template1')
-    head=Header('sample.h')
+    Config.init('../template/template1')
+    head=Header('../sample/sample.h')
     print 'Generate all head file implement: '
     head.accept(ImplementGenerationVisitor())
     print 'Generate special line_number %d implement: \n' % 15

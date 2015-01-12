@@ -22,7 +22,7 @@ public:
 
     explict SampleClass(float t);
 
-    SampleClass(int a, int b, int c);
+    SampleClass(int a, int b=5, int c=6);
 
     ~SampleClass();
 

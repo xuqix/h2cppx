@@ -18,7 +18,12 @@ FUNCTION : "
 #set $space=' '
 #set $l=$len($function.return_type)+$len($function.sign_name)+2
 #if $function.access: /* $function.access */
-${function.return_type} ${function.sign_name}(
+#if not $function.constructor and not $function.destructor:
+${function.return_type} #slurp
+#else
+#set $l=$l-5
+#end if
+${function.sign_name}(
 #for $p in $function.parameters:
 #repeat $l
 $space#slurp
@@ -34,7 +39,19 @@ $space#slurp
 #end repeat
 ) 
 {
+#if $function.return_type == 'void':
 
+#else if $function.returns in ['int','unsigned int','long','unsigned long','char','unsigned char']:
+    return 0;
+#else if $function.returns == 'bool'
+    return false;
+#else if $function.returns == 'float': 
+    return 0.0f;
+#else if $function.returns == 'double':
+    return 0.0;
+#else
+    return ${function.returns}();
+#end if
 } 
 
 "
@@ -60,11 +77,12 @@ CLASS_END : ""
 
 #头文件开始处添加描述
 HEADER_START : "
-
 /* 
  * Auto generate by h2cppx
  */
 
+
+\\#include \"$header.filename\"
 "
 
 #头文件处添加描述

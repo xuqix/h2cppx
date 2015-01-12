@@ -25,19 +25,7 @@ $p.type $p.name#slurp
 #end for 
 ) 
 {
-#if $function.return_type == 'void':
 
-#else if $function.returns in ['int','unsigned int','long','unsigned long','char','unsigned char']:
-    return 0;
-#else if $function.returns == 'bool'
-    return false;
-#else if $function.returns == 'float': 
-    return 0.0f;
-#else if $function.returns == 'double':
-    return 0.0;
-#else
-    return ${function.returns}();
-#end if
 } 
 
 "
@@ -63,11 +51,6 @@ CLASS_END : ""
 
 #头文件开始处添加描述
 HEADER_START : "
-/* 
- * Auto generate by h2cppx
- */
-
-
 \\#include \"$header.filename\"
 "
 

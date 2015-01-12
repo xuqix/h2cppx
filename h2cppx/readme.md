@@ -6,7 +6,7 @@ Parse c++ header file and generate c++ implement code
 
 **Author:** xiaok
 
-**External module required:** yaml
+**External module required:** yaml Cheetah
 
 **Third-party:** pyvisitor CppHeaderParser(modification) 
 
