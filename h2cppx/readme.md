@@ -16,6 +16,11 @@ Help Query:
     
     h2cppx -h
 
+example:
+--------
+
+    python h2cppx sample/sample.h
+
 Already includes platform support:
 ----------------------------------
 1. vim support: vim-port branch, just use "git checkout vim-port" to get it.

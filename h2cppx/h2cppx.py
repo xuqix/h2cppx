@@ -5,7 +5,8 @@ import sys
 
 cur_dir = os.path.split(os.path.realpath(__file__))[0]
 sys.path.append(cur_dir)
-sys.path.append(cur_dir+'/external')
+sys.path.append(cur_dir+'/src')
+sys.path.append(cur_dir+'/src/external')
 sys.path.append(cur_dir+'/template')
 
 import argparse
@@ -136,7 +137,10 @@ def auto_handle(args):
     cppfilename = args.header_file[:args.header_file.rfind('.')] + '.' + args.postfix.lstrip('.')
 
     out = None
-    path = os.path.abspath(args.search_path) + os.sep + cppfilename
+    if os.path.isabs(cppfilename):
+        path = cppfilename
+    else:
+        path = os.path.abspath(args.search_path) + os.sep + cppfilename
     if os.path.exists(path):
         out = open(path, 'a')
         cppfile = Header(path)
@@ -147,7 +151,7 @@ def auto_handle(args):
             node.accept(visitor)
     else:
         if args.output_path:
-            path = os.path.abspath(args.output_path) + os.sep + cppfilename
+            path = os.path.abspath(args.output_path) + os.sep + os.path.basename(cppfilename)
         # generate implement code
         out = open(path, 'w')
         visitor= ImplementGenerationVisitor(buf)
