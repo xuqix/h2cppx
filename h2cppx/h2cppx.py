@@ -37,7 +37,7 @@ example:
     h2cppx sample.h -a -o sample.cpp -ln 10
     h2cppx sample.h -f -o sample.cpp -t template/template2
     h2cppx sample.h -auto 
-    h2cppx sample.h -auto -p cxx --search-path=src --output-path=src2
+    h2cppx sample.h -auto -p cxx --search-path=src,src2 --output-path=src
 """
 
 parser = argparse.ArgumentParser(
@@ -114,14 +114,13 @@ parser.add_argument(
         "--search-path",
         required = False,
         action = "store",
-        default = ".",
-        help = "Setting implement search directory files, the default is the current directory(for -auto only)"
+        help = "Setting implement search directory list, the default is the directory where the header file(for -auto only)"
         )
 parser.add_argument(
         "--output-path",
         required = False,
         action = "store",
-        help = "Setting the implement file output directory,if the file search fails, it will generate a file in this directory.the default is same as the '--search-path' specified(for -auto only)"
+        help = "Setting the implement file output directory,if the file search fails, it will generate a file in this directory.the default is the directory where the header file(for -auto only)"
         )
 parser.add_argument(
         "-v",
@@ -130,18 +129,36 @@ parser.add_argument(
         version= version_description
         )
 
+def get_search_list(s):
+    if not s: return []
+    if ':' in s:
+        sep = ':'
+    else:
+        sep = ','
+    return [ os.path.abspath(p) for p in s.split(sep) ]
+
+def findpath(filename, search_list):
+    ''' search file in search path list '''
+    for _dir in search_list:
+        path = _dir + os.sep + filename
+        if os.path.exists(path):
+            return path
+    return None
+
 def auto_handle(args):
+    header_dir  = os.path.dirname(os.path.abspath(args.header_file))
+
+    search_list = get_search_list(args.search_path)
+    search_list.append(header_dir) #append the header files directory in the last of list
 
     buf = StringIO()
-    header = Header(args.header_file)
+    header = Header(os.path.abspath(args.header_file))
     cppfilename = args.header_file[:args.header_file.rfind('.')] + '.' + args.postfix.lstrip('.')
+    cppfilename = os.path.basename(cppfilename)
 
     out = None
-    if os.path.isabs(cppfilename):
-        path = cppfilename
-    else:
-        path = os.path.abspath(args.search_path) + os.sep + cppfilename
-    if os.path.exists(path):
+    path = findpath(cppfilename, search_list)
+    if path:
         out = open(path, 'a')
         cppfile = Header(path)
         diff_node = different_node(header, cppfile)
@@ -151,7 +168,12 @@ def auto_handle(args):
             node.accept(visitor)
     else:
         if args.output_path:
-            path = os.path.abspath(args.output_path) + os.sep + os.path.basename(cppfilename)
+            path = os.path.abspath(args.output_path) + os.sep + cppfilename
+        else:
+            path = header_dir + os.sep + cppfilename
+        if not os.path.exists(os.path.dirname(path)):
+            print >>sys.stderr,"The directory '"+os.path.dirname(path)+"' not exist!!!"
+            sys.exit(2)
         # generate implement code
         out = open(path, 'w')
         visitor= ImplementGenerationVisitor(buf)
@@ -223,6 +245,6 @@ if __name__=='__main__':
     try:
         do_action(args)
     except IOError,msg:
-        print >>sys.stderr,msg
+        print >>sys.stderr,"IOError: ", msg
         sys.exit(5)
 
