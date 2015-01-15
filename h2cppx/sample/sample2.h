@@ -20,7 +20,7 @@ public:
 
     explict SampleClass(int t=10);
 
-    char f1(int a);
+    char f1(int a) const;
     bool f2(float a);
     int f3(const unsigned char a);
     long f4(int a) const ;

@@ -28,10 +28,14 @@ ${function.sign_name}(
 #repeat $l
 $space#slurp
 #end repeat
+$p.type $p.name#slurp
+#if $p.default_value
+ /* =$p.default_value */ #slurp
+#end if
 #if $function.parameters.index($p)!=$len($function.parameters)-1
-$p.type $p.name,
+, 
 #else
-$p.type $p.name
+
 #end if
 #end for 
 #repeat $l

@@ -33,11 +33,11 @@ usage= \
 example = \
 """
 example:
-    h2cppx sample.h
-    h2cppx sample.h -a -o sample.cpp -ln 10
-    h2cppx sample.h -f -o sample.cpp -t template/template2
-    h2cppx sample.h -auto 
-    h2cppx sample.h -auto -p cxx --search-path=src,src2 --output-path=src
+    h2cppx sample/sample.h
+    h2cppx sample/sample.h -a -o sample.cpp -ln 21
+    h2cppx sample/sample.h -f -o sample.cpp -t template/template2
+    h2cppx sample/sample.h -auto 
+    h2cppx sample/sample.h -auto -p cxx --search-path=src,src2 --output-path=src
 """
 
 parser = argparse.ArgumentParser(
@@ -203,7 +203,10 @@ def do_action(args):
         auto_handle(args)
 
     buf = StringIO()
-    node = Header(args.header_file)
+    node = Header(os.path.abspath(args.header_file))
+    if not node.functions and not node.classes:
+        print >>sys.stderr, 'Nothing generation,is this a header file?'
+        sys.exit(1)
 
     if args.line_number:
         node = node.getNodeInLine(args.line_number)

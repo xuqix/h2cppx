@@ -36,7 +36,7 @@ ${function.sign_name}(#slurp
 #for $p in $function.parameters:
 $p.type $p.name#slurp
 #if $p.default_value
- /* default=$p.default_value */ #slurp
+ /* =$p.default_value */ #slurp
 #end if
 #if $function.parameters.index($p)!=$len($function.parameters)-1
 , #slurp
