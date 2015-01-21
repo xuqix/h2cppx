@@ -59,7 +59,7 @@ class Variable(Node):
             'raw_type' : info['raw_type'],
             'typedef'  : info['typedef'],
             'name'     : info['name'],
-            'namespace': info['namespace'],
+            'namespace': info['namespace'] if 'namespace' in info else '',
             'owner'    : info['property_of_class'] if 'property_of_class' in info else '',
             'static'   : True if info['static'] else False,
             'doxygen'  : info['doxygen'] if 'doxygen' in info else '',
