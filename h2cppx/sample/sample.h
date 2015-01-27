@@ -13,6 +13,8 @@ extern int ext_meth();
 class SampleClass
 {
 public:
+    TEST_MACRO(X);
+
     typedef int MyTypedef;
     SampleClass();
 

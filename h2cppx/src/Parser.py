@@ -109,7 +109,8 @@ class Function(Node):
             'constructor': True if info['constructor'] else False,
             'pure_virtual': 'pure virtual' if info['pure_virtual'] else '',
             'doxygen'  : info['doxygen'] if 'doxygen' in info else '',
-            'class' : info['class']
+            'class' : info['class'],
+            'owner' : info['path'].split('::')[-1] if 'path' in info else ''
         }
 
         #fix :

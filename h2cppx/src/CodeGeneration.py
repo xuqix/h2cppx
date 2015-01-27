@@ -97,9 +97,9 @@ class ImplementGenerationVisitor(object):
     @visitor.when(Function)
     def visit(self, node):
         """ Matches nodes that contain function. """ 
-        if node['defined'] or node['inline'] or node['extern'] or \
-           node['pure_virtual'] or node['friend']:
+        if not self.funcNeedDefine(node): 
             return None
+
         doxy_comment = ''
         if Config.DOXYGEN: doxy_comment = node['doxygen'] + os.linesep
 
@@ -149,9 +149,9 @@ class ImplementGenerationVisitor(object):
 
     @visitor.when(Function)
     def startNode(self, node):
-        if node['defined'] or node['inline'] or node['extern'] or \
-           node['pure_virtual'] or node['friend']:
+        if not self.funcNeedDefine(node): 
             return None
+
         func_start = ''
         if Config.FUNCTION_START: 
             func_start = str(Template(Config.FUNCTION_START, searchList=[{
@@ -161,9 +161,9 @@ class ImplementGenerationVisitor(object):
 
     @visitor.when(Function)
     def endNode(self, node):
-        if node['defined'] or node['inline'] or node['extern'] or \
-           node['pure_virtual'] or node['friend']:
+        if not self.funcNeedDefine(node): 
             return None
+
         func_end = ''
         if Config.FUNCTION_END: 
             func_end = str(Template(Config.FUNCTION_END, searchList=[{
@@ -211,6 +211,14 @@ class ImplementGenerationVisitor(object):
                 }]))
             self._stream.write(head_end+os.linesep)
 
+    def funcNeedDefine(self, node):
+        if node['defined'] or node['inline'] or node['extern'] or \
+           node['pure_virtual'] or node['friend']:
+            return False
+        # fix : Misconception that the macro as a constructor
+        if node['constructor'] and node['name'] != node['owner']:
+            return False
+        return True
 
 # for test
 if __name__=='__main__':
