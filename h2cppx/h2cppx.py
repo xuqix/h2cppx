@@ -187,6 +187,8 @@ def auto_handle(args):
         sys.exit(1)
     out.write(2*os.linesep)
 
+    print >>sys.stdout,"write file", path, "successful!"
+
     buf.close()
     out.close()
     sys.exit(0)
@@ -238,6 +240,9 @@ def do_action(args):
         print >>sys.stderr, 'Nothing generation'
         sys.exit(1)
     out.write(2*os.linesep)
+
+    if out != sys.stdout:
+        print >>sys.stdout,"write file", args.output, "successful!"
 
     buf.close()
     if type(out) == file:
