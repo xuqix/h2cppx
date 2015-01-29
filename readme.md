@@ -41,12 +41,27 @@ You can map the key in .vimrc to quickly use the command.
     nmap <F4>p :CpH2cppxLine<ESC>
     nmap <F5>  :H2cppxAuto<ESC>
 
-PS:
+Config
+------
 If the plugin can't find the python path in your computer,
 you need set "g:python_path" in the .vimrc file like this:
 
-    let g:python_path = '/usr/bin/python'
+    let g:h2cppx_python_path = '/usr/bin/python'
 
+and you can specify the cppfile name extension,default value is 'cpp':
+
+    let g:h2cppx_postfix = 'cxx'
+
+Finally,you can add a configuration file `.h2cppx_conf` in your project 
+directory to help plugin search for cppfile,otherwise the plugin will find
+cppfile in your header file directory.
+The configuration file might look like:
+    
+    /home/test/temp/src
+    src1
+    src2
+
+see the project_sample directory.
 
 Example:
 -------
