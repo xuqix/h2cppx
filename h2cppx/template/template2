@@ -1,16 +1,16 @@
-#是否添加头文件的doxygen注释
+#Whether to add headers doxygen comments
 DOXYGEN : No
 
-#相邻变量定义的空行数
+#The number of empty rows adjacent variable definitions
 VARIABLE_INTERVAL : 2
 
-#相邻函数定义的空行数
+#Empty rows adjacent function definition
 FUNCTION_INTERVAL : 2
 
-#变量定义生成格式
+#Generate variable definition format
 VARIABLE : "$variable.sign_type $variable.sign_name;" 
 
-#函数定义生成格式
+#Generating function definition format
 FUNCTION : "
 
 #if $function.access: 
@@ -46,26 +46,27 @@ $p.type $p.name#slurp
 
 "
 
-#以下皆为可选项
-#变量定义开始处添加描述
+#Optional:
+
+#Description at the beginning of the variable definition
 VARIABLE_START : ""
 
-#变量定义结束处添加描述
+#Description at the end of the variable definition
 VARIABLE_END : ""
 
-#函数定义开始处添加描述
+#Description at the beginning of the function definition
 FUNCTION_START : ""
 
-#函数定义结束处添加描述
+#Description at the end of the function definition
 FUNCTION_END : ""
 
-#类定义开始处添加描述
+#Class at the beginning of the definnition
 CLASS_START : ""
 
-#类定义结束处添加描述
+#Class at the end of the definnition
 CLASS_END : ""
 
-#头文件开始处添加描述
+#Header file at the beginning of the definnition
 HEADER_START : "
 /* 
  * Auto generate by h2cppx
@@ -75,7 +76,7 @@ HEADER_START : "
 \\#include \"$header.filename\"
 "
 
-#头文件处添加描述
+#Header file at the end of the definnition
 HEADER_END : ""
 
 
