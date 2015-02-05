@@ -8,6 +8,7 @@ endif
 
 let g:h2cppx = 1
 
+"config variable
 if(exists('g:h2cppx_python_path'))
     let s:python_path = g:h2cppx_python_path
 else
@@ -17,6 +18,11 @@ if(exists('g:h2cppx_postfix'))
     let s:postfix = substitute(g:h2cppx_postfix,".","","")
 else
     let s:postfix = 'cpp'
+endif
+if(exists('g:h2cppx_template'))
+    let s:template_file = g:h2cppx_template
+else
+    let s:template_file = 'template1'
 endif
 
 
@@ -29,7 +35,9 @@ let s:installed_directory = expand('<sfile>:p:h')
 let s:h2cppx_dir = s:installed_directory . "/h2cppx"
 let s:h2cppx_path= s:h2cppx_dir . "/h2cppx.py"
 
-let s:template_file= s:installed_directory . "/template"
+if (stridx(s:template_file,'/') != 0)
+    let s:template_file= s:installed_directory . "/h2cppx/template/" . s:template_file
+endif
 let s:config_file = findfile(".h2cppx_conf", ".;")
 if (s:config_file != "")
     let s:config_file = fnamemodify(s:config_file,":p")
@@ -37,24 +45,39 @@ if (s:config_file != "")
     let s:search_list = readfile(s:config_file)
     let s:i = 0
     while s:i < len(s:search_list)
-        if (stridx(s:search_list[s:i],'/') == -1)
+        if (stridx(s:search_list[s:i],'/') != 0)
             let s:search_list[s:i] = s:config_dir . '/' . s:search_list[s:i]
         endif
         let s:i = s:i + 1
     endwhile
+else
+    let s:search_list = []
 endif
 
+"get full path
+function s:fullpath(path)
+    let dir = a:path
+    let dir = fnamemodify(dir, ":p")
+    if strlen(dir)!=0 && (stridx(dir,'/')!=0)
+        let dir = fnamemodify(".",":p") . dir
+    endif
+    if strridx(dir,'/') != (strlen(dir)-1)
+        let dir = dir . '/'
+    endif
+    return dir
+endfunction
 
 "full generate cpp file
 function s:h2cppx(header_file, isClipboard)
     let filename = expand('%:r') . "." . s:postfix
     let cpp_file = findfile(filename, join(s:search_list,","))
-    if cpp_file == ""
-        let cpp_file = expand('%:p:r') . "." . s:postfix
-    endif
 
     let cmd = printf('%s "%s" -t "%s" "%s" ', s:python_path, s:h2cppx_path, s:template_file, a:header_file)
     if ! (a:isClipboard == 1)
+        if cpp_file == ""
+            let dir = input("Cpp File not find, please enter the new file output directory: ")
+            let cpp_file = s:fullpath(dir) . filename
+        endif
         let cmd = cmd . " -o " . cpp_file
     endif
     let content = system(cmd)
@@ -65,7 +88,7 @@ function s:h2cppx(header_file, isClipboard)
                 call setreg('"+', content )
                 echo "Define code already copy to your clipboard,use p to paster!"
             else
-                echo "Generate file " . filename . " successful!"
+                echo "Generate file " . cpp_file . " successful!"
             endif
         elseif v:shell_error == 1
             echo content
@@ -91,12 +114,13 @@ function s:h2cppx_line(header_file, line_number, isClipboard)
     let ln = a:line_number
     let filename = expand('%:r') . "." . s:postfix
     let cpp_file = findfile(filename, join(s:search_list,","))
-    if cpp_file == ""
-        let cpp_file = expand('%:p:r') . "." . s:postfix
-    endif
 
     let cmd = printf('%s "%s" "%s" -t "%s" -ln %d -a', s:python_path, s:h2cppx_path, a:header_file, s:template_file, ln)
     if ! (a:isClipboard == 1)
+        if cpp_file == ""
+            let dir = input("Cpp File not find, please enter the new file output directory: ")
+            let cpp_file = s:fullpath(dir) . filename
+        endif
         let cmd = cmd . " -o " . cpp_file
     endif
     let content = system(cmd)
@@ -107,7 +131,7 @@ function s:h2cppx_line(header_file, line_number, isClipboard)
                 call setreg('"+', content . "\n")
                 echo "Define code already copy to your clipboard,use p to paster!"
             else
-                echo "write file " . filename . " successful!"
+                echo "write file " . cpp_file . " successful!"
             endif
         elseif v:shell_error == 1
             echo content
@@ -131,10 +155,17 @@ endfunction
 
 function s:h2cppx_auto(header_file)
     let search_path = ""
+    let filename = expand('%:r') . "." . s:postfix
+    let cpp_file = findfile(filename, join(s:search_list,","))
 
     let cmd = printf('%s "%s" -t "%s" "%s" -auto -p %s ', s:python_path, s:h2cppx_path, s:template_file, a:header_file, s:postfix)
     if len(s:search_list) != 0
         let cmd = cmd . "--search-path=" . join(s:search_list,',')
+    endif
+
+    if cpp_file == ""
+        let dir = input("Cpp File not find, please enter the new file output directory: ")
+        let cmd = cmd . " --output-path=" . s:fullpath(dir)
     endif
     let content = system(cmd)
 
@@ -169,6 +200,7 @@ endfunction
 function H2cppxAuto()
     call s:h2cppx_auto(expand('%:p'))
 endfunction
+
 
 "generate cpp define and put in cpp file
 command! -buffer -nargs=0 H2cppx call H2cppx(0)

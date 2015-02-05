@@ -48,9 +48,20 @@ you need set "g:python_path" in the .vimrc file like this:
 
     let g:h2cppx_python_path = '/usr/bin/python'
 
-and you can specify the cppfile name extension,default value is 'cpp':
+and you can specify the cppfile name extension like this:
+(default value is 'cpp')
 
     let g:h2cppx_postfix = 'cxx'
+
+five code-generate template file are provided by default,you 
+can config it in '.vimrc' like this(template0-4,default is template1):
+
+    let g:h2cppx_template = 'template4' 
+
+if needed,you can refer to the default template and write your own template
+files,and use absolute path config it :
+
+    let g:h2cppx_template = '/home/xxx/.../xxx'
 
 Finally,you can add a configuration file `.h2cppx_conf` in your project 
 directory to help plugin search for cppfile,otherwise the plugin will find
