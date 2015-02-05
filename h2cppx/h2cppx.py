@@ -158,6 +158,12 @@ def auto_handle(args):
 
     out = None
     path = findpath(cppfilename, search_list)
+    #maybe cppfile already exists in output_path
+    if not path and args.output_path:
+        tmp = os.path.abspath(args.output_path) + os.sep + cppfilename
+        if os.path.exists(tmp):
+            path = tmp
+
     if path:
         out = open(path, 'a')
         cppfile = Header(path)
