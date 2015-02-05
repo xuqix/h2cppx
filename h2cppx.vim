@@ -15,7 +15,7 @@ else
     let s:python_path = 'python'
 endif
 if(exists('g:h2cppx_postfix'))
-    let s:postfix = substitute(g:h2cppx_postfix,".","","")
+    let s:postfix = substitute(g:h2cppx_postfix,'\.',"","")
 else
     let s:postfix = 'cpp'
 endif
