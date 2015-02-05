@@ -74,6 +74,28 @@ The configuration file might look like:
 
 see the project_sample directory.
 
+Usage
+-----
+The plugin function description:
+
+* :H2cppx  
+  Parse c++ header file and generate cpp file 
+
+* :CpH2cppx  
+  Like :H2cppx,but generat code in your clipboard, no file writed,you can use "p" to get it.
+
+* :H2cppxLine  
+  Generate cpp code in the cursor line,and append to the end of the cpp file
+
+* :CpH2cppxLine  
+  Like :H2cppxLine,but generat code in your clipboard, no file writed,you can use "p" to get it.
+
+* :H2cppxAuto  (Recommendation)   
+  Auto Contrast header and implementation files, find
+  function declarations in the header file and append
+  the newly added to the implementation file, if the 
+  file does not exist to achieve a new file is created!
+
 Example:
 -------
 
